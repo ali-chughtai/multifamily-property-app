@@ -11,6 +11,34 @@ dotenv.config();
 
 const app = express();
 
+// Initialize database once
+let dbInitialized = false;
+let dbInitializing = false;
+
+const ensureDatabase = async () => {
+  if (dbInitialized) return;
+  
+  if (dbInitializing) {
+    // Wait for ongoing initialization
+    while (dbInitializing) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    return;
+  }
+  
+  dbInitializing = true;
+  try {
+    await initializeDatabase();
+    dbInitialized = true;
+    console.log("✅ Database initialized successfully");
+  } catch (error) {
+    console.error("❌ Database initialization failed:", error);
+    throw error;
+  } finally {
+    dbInitializing = false;
+  }
+};
+
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://multifamily-frontend.vercel.app']
@@ -28,19 +56,29 @@ app.use((req, res, next) => {
 });
 
 // Root route
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Multifamily Property Backend API',
-    status: 'running',
-    endpoints: {
-      health: '/health',
-      trpc: '/trpc',
-    }
-  });
+app.get('/', async (req, res) => {
+  try {
+    await ensureDatabase();
+    res.json({
+      message: 'Multifamily Property Backend API',
+      status: 'running',
+      endpoints: {
+        health: '/health',
+        trpc: '/trpc',
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Database connection failed'
+    });
+  }
 });
 
 app.get('/health', async (req, res) => {
   try {
+    await ensureDatabase();
     const { query } = await import('../src/utils/db');
     await query('SELECT 1');
     
@@ -55,6 +93,19 @@ app.get('/health', async (req, res) => {
       status: 'ERROR', 
       message: 'Database connection failed',
       error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Ensure database before tRPC routes
+app.use('/trpc', async (req, res, next) => {
+  try {
+    await ensureDatabase();
+    next();
+  } catch (error) {
+    res.status(500).json({
+      error: 'Database initialization failed',
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -102,8 +153,5 @@ app.use('*', (req, res) => {
     statusCode: 404
   });
 });
-
-// Initialize database
-initializeDatabase().catch(console.error);
 
 export default app;

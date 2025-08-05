@@ -11,8 +11,14 @@ export const AppDataSource = new DataSource({
     type: "postgres",
     url: process.env.DATABASE_URL,
     synchronize: true,
-    logging: false,
+    logging: process.env.NODE_ENV !== 'production',
     entities: [Property, TenantProfile, Amenity],
     migrations: [],
     subscribers: [],
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    extra: process.env.NODE_ENV === 'production' ? {
+        ssl: {
+            rejectUnauthorized: false
+        }
+    } : {}
 });

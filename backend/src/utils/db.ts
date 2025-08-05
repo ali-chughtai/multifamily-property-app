@@ -31,13 +31,15 @@ export const getClient = async () => {
 
 export const initializeDatabase = async () => {
   try {
-    await AppDataSource.initialize();
-    console.log("✅ Database connected successfully");
-    
-    await seedAmenities();
-    console.log("✅ Database initialization complete");
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+      console.log("✅ Database connected successfully");
+      await seedAmenities();
+      console.log("✅ Database initialization complete");
+    }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
+    console.error("❌ Database initialization failed:", errorMessage);
     throw new DatabaseError(`Database initialization failed: ${errorMessage}`);
   }
 };
