@@ -13,7 +13,7 @@ const app = express();
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
+    ? [process.env.FRONTEND_URL || 'https://multifamily-frontend.vercel.app']
     : ['http://localhost:3000'],
   credentials: true,
   optionsSuccessStatus: 200
