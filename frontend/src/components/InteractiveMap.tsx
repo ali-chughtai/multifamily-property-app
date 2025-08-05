@@ -219,7 +219,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
             type="text"
             value={searchTerm}
             onChange={handleInputChange}
-            placeholder="Search for an address (e.g., H-8/1, Islamabad, Pakistan)"
+            placeholder="Search for an address (e.g: Maple Street, Robins, Linn County, Iowa, United States)"
             className="input-field pr-10"
           />
           <div className="absolute inset-y-0 right-0 flex items-center pr-3">
