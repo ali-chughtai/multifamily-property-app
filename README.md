@@ -238,19 +238,6 @@ cd backend
 npm run build
 ```
 
-### Environment Variables (Production)
-## Backend Env
-```bash
-DATABASE_URL=postgresql://property_app_user:your_secure_password@your-db-host:5432/property_management_db
-PORT=3001
-FRONTEND_URL=http://localhost:3000
-NODE_ENV=local #or production
-```
-## Frontend Env
-```bash
-VITE_API_URL=http://localhost:3001/trpc #or deployed backend api url
-```
-
 ## 📄 License
 
 This project is licensed under the MIT License.
