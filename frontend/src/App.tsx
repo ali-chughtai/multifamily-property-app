@@ -12,7 +12,7 @@ const queryClient = new QueryClient();
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: 'https://multifamily-backend-api.vercel.app/trpc',
+      url: process.env.REACT_APP_API_URL || "http://localhost:3001/trpc",
     }),
   ],
 });

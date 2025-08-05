@@ -11,7 +11,6 @@ dotenv.config();
 
 const app = express();
 
-// Initialize database once
 let dbInitialized = false;
 let dbInitializing = false;
 
@@ -19,7 +18,6 @@ const ensureDatabase = async () => {
   if (dbInitialized) return;
   
   if (dbInitializing) {
-    // Wait for ongoing initialization
     while (dbInitializing) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
@@ -30,9 +28,7 @@ const ensureDatabase = async () => {
   try {
     await initializeDatabase();
     dbInitialized = true;
-    console.log("✅ Database initialized successfully");
   } catch (error) {
-    console.error("❌ Database initialization failed:", error);
     throw error;
   } finally {
     dbInitializing = false;
@@ -41,7 +37,7 @@ const ensureDatabase = async () => {
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://multifamily-frontend.vercel.app']
+    ? [process.env.FRONTEND_URL || '']
     : ['http://localhost:3000'],
   credentials: true,
   optionsSuccessStatus: 200
@@ -50,12 +46,6 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`, req.body);
-  next();
-});
-
-// Root route
 app.get('/', async (req, res) => {
   try {
     await ensureDatabase();
@@ -68,7 +58,6 @@ app.get('/', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({
       status: 'error',
       message: 'Database connection failed'
@@ -97,7 +86,6 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Ensure database before tRPC routes
 app.use('/trpc', async (req, res, next) => {
   try {
     await ensureDatabase();
@@ -116,12 +104,8 @@ app.use(
     router: appRouter,
     createContext: () => ({}),
     onError: ({ error, type, path, input }) => {
-      console.error(`❌ tRPC Error in ${type} at ${path}:`, {
-        message: error.message,
-        code: error.code,
-        input,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      });
+      throw new Error(error.message);
+      
     },
   })
 );
@@ -135,8 +119,6 @@ app.use((error: Error, req: express.Request, res: express.Response, next: expres
     });
   }
 
-  console.error('💥 Unexpected Error:', error);
-  
   res.status(500).json({
     status: 'error',
     message: process.env.NODE_ENV === 'production' 

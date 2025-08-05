@@ -33,13 +33,10 @@ export const initializeDatabase = async () => {
   try {
     if (!AppDataSource.isInitialized) {
       await AppDataSource.initialize();
-      console.log("✅ Database connected successfully");
       await seedAmenities();
-      console.log("✅ Database initialization complete");
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
-    console.error("❌ Database initialization failed:", errorMessage);
     throw new DatabaseError(`Database initialization failed: ${errorMessage}`);
   }
 };
@@ -285,10 +282,7 @@ const seedAmenities = async () => {
       ];
       
       const savedAmenities = await amenityRepository.save(amenities);
-      console.log(`✅ Seeded ${savedAmenities.length} amenities successfully`);
       return savedAmenities;
-    } else {
-      console.log(`ℹ️ Found ${count} existing amenities, skipping seed`);
     }
   } catch (error) {
     throw new DatabaseError(`Failed to seed amenities: ${error instanceof Error ? error.message : 'Unknown error'}`);
