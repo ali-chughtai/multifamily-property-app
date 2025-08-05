@@ -70,6 +70,7 @@ cd multifamily-property-app
 2. **Install dependencies**
 ```bash
 # Install frontend dependencies
+cd frontend
 npm install
 
 # Install backend dependencies
@@ -103,31 +104,28 @@ psql -U postgres
 
 **Execute Database Setup Commands**
 ```sql
--- Create a new database
 CREATE DATABASE property_management_db;
-
--- Create a new user with password
 CREATE USER property_app_user WITH PASSWORD 'secure_password_123';
-
--- Grant all privileges on the database to the user
 GRANT ALL PRIVILEGES ON DATABASE property_management_db TO property_app_user;
-
--- Exit PostgreSQL
 \q
 ```
 
 **Test Database Connection**
 ```bash
-# Test connection with new user
 psql -h localhost -U property_app_user -d property_management_db
 ```
 
-4. **Environment Setup**
+4. **Environment Variables**
+## Backend Env
 ```bash
-# Backend environment (.env)
-DATABASE_URL="postgresql://property_app_user:secure_password_123@localhost:5432/property_management_db"
+DATABASE_URL=postgresql://property_app_user:your_secure_password@your-db-host:5432/property_management_db
 PORT=3001
-NODE_ENV=development
+FRONTEND_URL=http://localhost:3000 #or deployed frontend url
+NODE_ENV=local #or production
+```
+## Frontend Env
+```bash
+VITE_API_URL=http://localhost:3001/trpc #or deployed backend api url
 ```
 
 5. **Start Development Servers**
@@ -190,13 +188,20 @@ multifamily-property-app/
 ├── backend/
 │   ├── package.json
 │   ├── tsconfig.json
-│   ├── .env
+│   ├── vercel.json
+│   ├── api/
+│   │   └── index.ts                   
 │   └── src/
-│       ├── server.ts
-│       ├── trpc.ts
+│       ├── server.ts                  
+│       ├── data-source.ts             
+│       ├── trpc.ts                    
+│       ├── entities/
+│       │   ├── Property.ts
+│       │   ├── TenantProfile.ts
+│       │   └── Amenity.ts
 │       └── utils/
-│           ├── db.ts
-│           └── errors.ts
+│           ├── db.ts                  
+│           └── errors.ts              
 │
 └── frontend/
     ├── package.json
@@ -205,11 +210,12 @@ multifamily-property-app/
     ├── tailwind.config.js
     ├── postcss.config.js
     ├── index.html
-    ├── test-output.css
+    ├── test-output.css                
     └── src/
-        ├── main.tsx
-        ├── App.tsx
-        ├── index.css
+        ├── main.tsx                   
+        ├── App.tsx                    
+        ├── index.css                  
+        ├── vite-env.d.ts             
         ├── components/
         │   ├── Layout.tsx
         │   ├── PropertyForm.tsx
@@ -217,7 +223,7 @@ multifamily-property-app/
         │   ├── AmenitySuggestions.tsx
         │   └── InteractiveMap.tsx
         └── utils/
-            └── trpc.ts
+            └── trpc.ts               # tRPC client configuration
 ```
 
 ## 🚀 Deployment
@@ -233,11 +239,16 @@ npm run build
 ```
 
 ### Environment Variables (Production)
+## Backend Env
 ```bash
 DATABASE_URL=postgresql://property_app_user:your_secure_password@your-db-host:5432/property_management_db
-NODE_ENV=production
 PORT=3001
-CORS_ORIGIN=https://your-domain.com
+FRONTEND_URL=http://localhost:3000
+NODE_ENV=local #or production
+```
+## Frontend Env
+```bash
+VITE_API_URL=http://localhost:3001/trpc #or deployed backend api url
 ```
 
 ## 📄 License
